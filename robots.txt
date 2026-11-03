@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lykabuilds.github.io/game_nights/sitemap.xml

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Night: Room Codes, Live Scores &amp; Leaderboard</title>
+<meta name="description" content="Host a board game night: share by QR code, make a quick player, join rooms with a 4-letter code, track live scores and climb the shared leaderboard.">
+<link rel="canonical" href="https://lykabuilds.github.io/game_nights/game-night/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="lykabuilds">
+<meta name="theme-color" content="#fffaf3">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Game Night Rulebook">
+<meta property="og:title" content="Game Night: Room Codes, Live Scores &amp; Leaderboard">
+<meta property="og:description" content="Host a board game night: share by QR code, make a quick player, join rooms with a 4-letter code, track live scores and climb the shared leaderboard.">
+<meta property="og:url" content="https://lykabuilds.github.io/game_nights/game-night/">
+<meta property="og:image" content="https://lykabuilds.github.io/game_nights/assets/og/night.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Game Night: Room Codes, Live Scores &amp; Leaderboard">
+<meta name="twitter:description" content="Host a board game night: share by QR code, make a quick player, join rooms with a 4-letter code, track live scores and climb the shared leaderboard.">
+<meta name="twitter:image" content="https://lykabuilds.github.io/game_nights/assets/og/night.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/styles.css">
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "WebApplication", "name": "Game Night Rulebook: Game Night", "url": "https://lykabuilds.github.io/game_nights/game-night/", "applicationCategory": "GameApplication", "operatingSystem": "Any (web browser)", "description": "Host a board game night: share by QR code, make a quick player, join rooms with a 4-letter code, track live scores and climb the shared leaderboard.", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "image": "https://lykabuilds.github.io/game_nights/assets/og/night.png"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Game Night Rulebook", "item": "https://lykabuilds.github.io/game_nights/"}, {"@type": "ListItem", "position": 2, "name": "Game Night", "item": "https://lykabuilds.github.io/game_nights/game-night/"}]}]</script>
+</head>
+<body data-game="party" data-page="night">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <a class="brand" href="../">Game Night Rulebook <span class="wobble" aria-hidden="true">🎲</span></a>
+  <p class="tagline">Interactive rules, setup checklists and score helpers for your favorite board games.</p>
+  <nav class="games" aria-label="Games"><a href="../harmonies/"><span class="dot" aria-hidden="true">🌿</span>Harmonies</a><a href="../tiny-epic-dungeons/"><span class="dot" aria-hidden="true">🗡️</span>Tiny Epic Dungeons</a><a href="../century-golem/"><span class="dot" aria-hidden="true">💎</span>Century: Golem Edition</a><a href="../game-night/" aria-current="page"><span class="dot" aria-hidden="true">🎉</span>Game Night</a></nav>
+</header>
+<main class="wrap" id="main">
+  <div class="toolbar">
+    <div class="search" role="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search all rules… (press /)" aria-label="Search the rules of every game" aria-controls="qresults" aria-expanded="false" autocomplete="off">
+      <div id="qresults" class="qresults" role="listbox" hidden></div>
+    </div>
+    <span class="hint" id="qhint" aria-live="polite"></span>
+  </div>
+<article class="page" id="g-party"><nav aria-label="Breadcrumb" class="crumbs"><a href="../">Home</a><span aria-hidden="true"> › </span><span aria-current="page">Game Night</span></nav>
+<div class="hero" data-emoji="🎉">
+<div>
+<h1>Game Night</h1>
+<p>Share the rulebook, make your player, open a room with a code, and keep live scores. Every finished game lands on the leaderboard.</p>
+<div class="stats"><span class="chip">QR sharing</span><span class="chip">Room codes</span><span class="chip">Live scores</span><span class="chip">Leaderboard</span></div>
+</div>
+</div>
+<div class="subnav">
+<a href="#p-share">Share</a><a href="#p-me">My player</a><a href="#p-room">Room</a><a href="#p-board">Leaderboard</a>
+</div>
+<div class="notice hidden" id="p-status"></div>
+<section class="block" id="p-share">
+<h2><span class="num">1</span>Share with a QR code</h2>
+<div class="card share">
+<div class="qrbox" id="qr-app"></div>
+<div>
+<h3 id="qr-title">Scan to open the rulebook</h3>
+<p class="hint" id="qr-sub" style="margin:4px 0 10px">Point a phone camera at the code.</p>
+<div class="linkrow"><code id="qr-link"></code><button class="btn" id="qr-copy">Copy link</button></div>
+<p class="hint" style="margin:10px 0 0">Anyone who scans can read the rules and join rooms right away. No sign-up needed.</p>
+</div>
+</div>
+</section>
+<section class="block" id="p-me">
+<h2><span class="num">2</span>My player</h2>
+<div class="card">
+<div id="me-view"></div>
+<div class="calc hidden" id="me-form">
+<div class="fields">
+<div class="field"><label for="me-name">Nickname</label><input class="txt" id="me-name" maxlength="18" placeholder="e.g. Lyka"/></div>
+</div>
+<div class="field"><label>Pick your token</label><div class="emoji-grid" id="me-emoji"></div></div>
+<div class="row"><span class="hint">Takes 5 seconds. No password. Your player is remembered on this phone or browser.</span><button class="btn primary" id="me-save">Save my player</button></div>
+</div>
+</div>
+</section>
+<section class="block" id="p-room">
+<h2><span class="num">3</span>Room</h2>
+<div class="grid2" id="room-lobby">
+<div class="card calc">
+<h3>Host a game</h3>
+<div class="field"><label>Which game?</label><div class="pill-select" id="new-game">
+<button aria-pressed="true" data-v="harmonies">🌿 Harmonies</button><button aria-pressed="false" data-v="ted">🗡️ Tiny Epic Dungeons</button><button aria-pressed="false" data-v="century">💎 Century</button></div></div>
+<button class="btn primary" id="room-create">Create room code</button>
+</div>
+<div class="card calc">
+<h3>Join with a code</h3>
+<div class="field"><label for="join-code">Room code</label><input autocomplete="off" class="txt code-input" id="join-code" maxlength="4" placeholder="ABCD"/></div>
+<button class="btn primary" id="room-join">Join room</button>
+<div id="join-msg"></div>
+</div>
+</div>
+<div class="hidden" id="room-view"></div>
+</section>
+<section class="block" id="p-board">
+<h2><span class="num">4</span>Leaderboard</h2>
+<div class="card">
+<div class="row" style="margin-bottom:10px"><div class="pill-select" id="lb-filter">
+<button aria-pressed="true" data-v="all">All games</button><button aria-pressed="false" data-v="harmonies">🌿 Harmonies</button><button aria-pressed="false" data-v="ted">🗡️ TED</button><button aria-pressed="false" data-v="century">💎 Century</button></div></div>
+<div id="lb"></div>
+<h3 style="margin:18px 0 8px">Recent games</h3>
+<div id="recent"></div>
+</div>
+</section>
+</article>
+</main>
+<footer><p>Made by <a href="https://github.com/lykabuilds">lykabuilds</a>. Rules are summarized in plain language for quick reference. For edge cases, card text and expansions, check each game's official rulebook. Harmonies, Tiny Epic Dungeons and Century: Golem Edition are trademarks of their publishers. This is an unofficial fan guide.</p></footer>
+<script src="../assets/search-index.js" defer></script>
+<script src="../assets/app.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script src="../assets/game-night.js" defer></script>
+<script type="module" src="../assets/firebase.js"></script>
+</body>
+</html>

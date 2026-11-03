@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function validName(d) { return d.name is string && d.name.size() > 0 && d.name.size() <= 18; }
+
+    // Player profiles (the "quick accounts")
+    match /players/{pid} {
+      allow read: if true;
+      // Your own player (id = your anonymous user id), or a guest the host quick-adds (uid = null)
+      allow create: if signedIn() && validName(request.resource.data)
+        && ((pid == request.auth.uid && request.resource.data.uid == request.auth.uid)
+            || (request.resource.data.uid == null && request.resource.data.addedBy == request.auth.uid));
+      // Edit your own player, or a guest you added
+      allow update: if signedIn() && validName(request.resource.data)
+        && (pid == request.auth.uid || resource.data.addedBy == request.auth.uid);
+      allow delete: if false;
+    }
+
+    // Game rooms, keyed by a 4-letter code
+    match /rooms/{code} {
+      allow read: if true;
+      allow create: if signedIn() && code.matches('^[A-Z]{4}$')
+        && request.resource.data.host == request.auth.uid
+        && request.resource.data.game in ['harmonies', 'ted', 'century'];
+      // Anyone at the table can join and enter scores, but the host and game can't change
+      allow update: if signedIn()
+        && request.resource.data.host == resource.data.host
+        && request.resource.data.game == resource.data.game;
+      allow delete: if signedIn() && resource.data.host == request.auth.uid;
+    }
+
+    // Finished games feed the leaderboard. Write-once: no edits or deletes from the app.
+    match /results/{id} {
+      allow read: if true;
+      allow create: if signedIn() && request.resource.data.host == request.auth.uid
+        && request.resource.data.game in ['harmonies', 'ted', 'century'];
+      allow update, delete: if false;
+    }
+  }
+}

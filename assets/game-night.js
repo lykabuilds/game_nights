@@ -78,6 +78,93 @@ const isHost=()=>room&&room.host===myId;const editable=pid=>canWrite!==false&&ro
 const timers={};
 function setScore(pid,field,val){clearTimeout(timers[pid+field]);timers[pid+field]=setTimeout(()=>{const cur=(room.scores||{})[pid]||{};const n=Math.max(0,parseInt(val)||0);if(cur[field]===n)return;
   queued('rooms/'+roomCode,()=>db.doc('rooms/'+roomCode).update({scores:{[pid]:{[field]:n}}})).catch(onWriteErr)},500)}
+
+/* ---------- per-player trackers (live) ---------- */
+const TRK={
+  ted:{hero:[{k:'hp',icon:'❤️',label:'Health',max:'hpMax',min:0},{k:'focus',icon:'✨',label:'Focus',max:'focusMax',min:0},{k:'slain',icon:'⚔️',label:'Enemies slain',min:0}]},
+  harmonies:{hero:[{k:'cards',icon:'🃏',label:'Cards in progress',min:0,cap:4},{k:'cubes',icon:'🟫',label:'Animal cubes placed',min:0},{k:'score',icon:'⭐',label:'Running score',min:0,step:1}]},
+  century:{hero:[{k:'Y',icon:'<span class="crystal" style="background:#e5c443"></span>',label:'Yellow',min:0,crys:1},{k:'G',icon:'<span class="crystal" style="background:#4f9a4a"></span>',label:'Green',min:0,crys:1},{k:'B',icon:'<span class="crystal" style="background:#3f88c5"></span>',label:'Blue',min:0,crys:1},{k:'P',icon:'<span class="crystal" style="background:#d4508f"></span>',label:'Pink',min:0,crys:1},
+    {k:'golems',icon:'🗿',label:'Golems claimed',min:0},{k:'gpts',icon:'🏅',label:'Golem points',min:0,step:1},{k:'gold',icon:'🥇',label:'Gold coins (3 pts)',min:0},{k:'silver',icon:'🥈',label:'Silver coins (1 pt)',min:0}]}
+};
+const pend={},pendT={};
+function sv(pid,k,def){const p=pend[pid];if(p&&k in p)return p[k];const s=((room.sheets||{})[pid]||{})[k];return s===undefined?def:s}
+function partyV(k,def){const p=pend._party;if(p&&k in p)return p[k];const s=(room.party||{})[k];return s===undefined?def:s}
+function centuryScore(pid){return sv(pid,'gpts',0)+sv(pid,'gold',0)*3+sv(pid,'silver',0)+sv(pid,'G',0)+sv(pid,'B',0)+sv(pid,'P',0)}
+function setSheet(pid,patch){
+  pend[pid]=Object.assign(pend[pid]||{},patch);renderRoom();
+  clearTimeout(pendT[pid]);pendT[pid]=setTimeout(()=>{
+    const snap={...pend[pid]};let body;
+    if(pid==='_party')body={party:snap};
+    else{body={sheets:{[pid]:snap}};
+      if(room.game==='century'){body.scores={[pid]:{score:centuryScore(pid)}}}
+      if(room.game==='harmonies'){const sc={};if('cubes' in snap)sc.tb=snap.cubes;if('score' in snap)sc.score=snap.score;if(Object.keys(sc).length)body.scores={[pid]:sc}}}
+    queued('rooms/'+roomCode,()=>db.doc('rooms/'+roomCode).update(body)).then(()=>{
+      const cur=pend[pid];if(cur){for(const k in snap)if(cur[k]===snap[k])delete cur[k];if(!Object.keys(cur).length)delete pend[pid]}},onWriteErr)},350)}
+function counter(pid,f,val,ed,extra){
+  return '<div class="tk-row'+(extra||'')+'"><span class="tk-label">'+f.icon+' '+f.label+'</span><span class="tk-ctrl">'+
+    (ed?'<button type="button" class="tk-b" data-pid="'+pid+'" data-k="'+f.k+'" data-d="-1" aria-label="Less '+f.label+'">−</button>':'')+
+    '<output class="tk-v">'+val+'</output>'+(f.max?'<span class="tk-max">/ '+sv(pid,f.max,0)+'</span>':'')+
+    (ed?'<button type="button" class="tk-b" data-pid="'+pid+'" data-k="'+f.k+'" data-d="1" aria-label="More '+f.label+'">+</button>':'')+'</span></div>'}
+function bar(val,max,cls){const pct=max?Math.max(0,Math.min(100,val/max*100)):0;return '<div class="tk-bar '+cls+'"><i style="width:'+pct+'%"></i></div>'}
+function heroCard(pid,seatNo){
+  const g=room.game,ed=editable(pid)&&room.status==='playing',mine=pid===myId;let b='',warn=[],badge='';
+  if(g==='ted'){
+    const hpMax=sv(pid,'hpMax',0),fMax=sv(pid,'focusMax',0);
+    if(!hpMax&&ed){b+='<div class="tk-setup"><p class="hint" style="margin:0 0 8px">Set your hero\'s max Health and Focus from your hero mat.</p><div class="tk-setrow"><label>❤️ Max<input type="number" min="1" max="30" inputmode="numeric" id="set-hp-'+pid+'" value="8"></label><label>✨ Max<input type="number" min="0" max="30" inputmode="numeric" id="set-f-'+pid+'" value="8"></label><button type="button" class="btn primary" data-sethero="'+pid+'">Set</button></div></div>'}
+    else if(!hpMax){b+='<p class="hint">Waiting for this hero to set up…</p>'}
+    else{const hp=sv(pid,'hp',hpMax),fo=sv(pid,'focus',fMax);
+      b+=counter(pid,TRK.ted.hero[0],hp,ed)+bar(hp,hpMax,'hp'+(hp<=Math.ceil(hpMax/4)?' low':''));
+      b+=counter(pid,TRK.ted.hero[1],fo,ed)+bar(fo,fMax,'focus');
+      b+=counter(pid,TRK.ted.hero[2],sv(pid,'slain',0),ed);
+      if(hp<=0){badge='<span class="tk-badge ko">💤 Unconscious</span>';warn.push('Unconscious: on your next turn you must Rest. Healing from another hero wakes you right away.')}
+      else if(hp<=Math.ceil(hpMax/4))badge='<span class="tk-badge low">Low health</span>';
+      if(ed)b+='<div class="tk-quick"><button type="button" class="btn" data-rest="'+pid+'">😴 Rest (+3 ❤️, +5 ✨)</button><button type="button" class="btn" data-editmax="'+pid+'">Edit max</button></div>'}
+  }else if(g==='harmonies'){
+    TRK.harmonies.hero.forEach(f=>{const v=sv(pid,f.k,0);b+=counter(pid,f,v,ed,f.cap&&v>=f.cap?' at-cap':'')});
+    if(sv(pid,'cards',0)>=4)warn.push('Card limit reached: finish a card before taking another.');
+    const end=!!sv(pid,'endTrig',false);
+    b+='<button type="button" class="tk-toggle'+(end?' on':'')+'" '+(ed?'data-endtrig="'+pid+'"':'disabled')+' aria-pressed="'+end+'">🏁 2 or fewer empty spaces left</button>';
+    if(end)badge='<span class="tk-badge end">🏁 End triggered</span>';
+  }else if(g==='century'){
+    const cry=['Y','G','B','P'].reduce((a,k)=>a+sv(pid,k,0),0);
+    b+='<div class="tk-crys">'+TRK.century.hero.filter(f=>f.crys).map(f=>{const v=sv(pid,f.k,0);
+      return '<div class="tk-cry">'+f.icon+'<output class="tk-v">'+v+'</output>'+(ed?'<span><button type="button" class="tk-b sm" data-pid="'+pid+'" data-k="'+f.k+'" data-d="-1" aria-label="Less '+f.label+'">−</button><button type="button" class="tk-b sm" data-pid="'+pid+'" data-k="'+f.k+'" data-d="1" aria-label="More '+f.label+'">+</button></span>':'')+'</div>'}).join('')+'</div>';
+    b+='<div class="tk-caravan'+(cry>10?' over':'')+'">Caravan: <b>'+cry+'</b> / 10'+bar(cry,10,'car'+(cry>10?' over':''))+'</div>';
+    if(cry>10)warn.push('Over the caravan limit: discard down to 10 at the end of your turn.');
+    TRK.century.hero.filter(f=>!f.crys).forEach(f=>b+=counter(pid,f,sv(pid,f.k,0),ed));
+    const trig=seatOrder().length>=4?5:6;
+    if(sv(pid,'golems',0)>=trig){badge='<span class="tk-badge end">🏁 '+trig+' golems</span>';warn.push('End triggered: finish the round so everyone has equal turns.')}
+    b+='<div class="tk-total">Score so far <b>'+centuryScore(pid)+'</b></div>';
+  }
+  return '<div class="tk-card'+(mine?' mine':'')+'"><div class="tk-head"><div class="avatar sm">'+esc(pEmoji(pid))+'</div><div><div class="pname">'+esc(pName(pid))+(mine?' (you)':'')+'</div><div class="pmeta">'+(g==='ted'?'Hero ':'Seat ')+seatNo+'</div></div>'+badge+'</div>'+b+
+    warn.map(w=>'<div class="warn sm">'+w+'</div>').join('')+'</div>'}
+function renderTrackers(seats){
+  const g=room.game;let h='<div class="tk-wrap"><div class="row"><h3 style="margin:0">'+(g==='ted'?'🛡️ Party tracker':'📊 Player trackers')+'</h3><span class="hint">Updates live on every phone</span></div>';
+  if(g==='ted'){const ed=canWrite!==false&&room.status==='playing'&&((room.members||{})[myId]||isHost());const gob=partyV('goblins',0);
+    h+='<div class="tk-party">'+counter('_party',{k:'torch',icon:'🔥',label:'Torch moves',min:0},partyV('torch',0),ed)+
+      counter('_party',{k:'goblins',icon:'👺',label:'Goblins on the Torch mat',min:0,cap:5},gob,ed)+
+      '<div class="goblins">'+[1,2,3,4].map(k=>'<span class="'+(k<=gob?'on':'')+'">'+(k<=gob?'👺':k)+'</span>').join('')+'</div>'+
+      (gob>=5?'<div class="warn">A 5th Goblin: the heroes lose!</div>':gob===4?'<div class="warn sm">All 4 Goblins are out. One more loses the game.</div>':'')+
+      (ed?'<div class="tk-quick"><button type="button" class="btn" data-minion="1">👹 Minion killed (torch back 6)</button></div>':'')+'</div>';
+    const down=seats.filter(pid=>sv(pid,'hpMax',0)&&sv(pid,'hp',1)<=0).length;
+    if(down)h+='<div class="warn sm">'+down+' hero'+(down>1?'es are':' is')+' unconscious.</div>';}
+  if(g==='harmonies'&&seats.some(pid=>sv(pid,'endTrig',false)))h+='<div class="notice">🏁 The end is triggered. Finish this round so everyone has the same number of turns.</div>';
+  if(g==='century'){const trig=seats.length>=4?5:6;if(seats.some(pid=>sv(pid,'golems',0)>=trig))h+='<div class="notice">🏁 Someone has '+trig+' golems. Finish this round, then score.</div>';}
+  const order=[...seats].sort((a,b)=>(b===myId)-(a===myId));
+  h+='<div class="tk-grid">'+order.map(pid=>heroCard(pid,seats.indexOf(pid)+1)).join('')+'</div></div>';
+  return h}
+function bindTrackers(v){
+  const fieldOf=(pid,k)=>{if(pid==='_party')return {k,min:0,cap:k==='goblins'?5:null};return (TRK[room.game].hero.find(f=>f.k===k))||{k,min:0}};
+  v.querySelectorAll('.tk-b').forEach(b=>b.onclick=()=>{const pid=b.dataset.pid,k=b.dataset.k,f=fieldOf(pid,k);
+    let cur=pid==='_party'?partyV(k,0):sv(pid,k,f.max?sv(pid,f.max,0):0);let n=cur+(+b.dataset.d);
+    if(n<(f.min||0))n=f.min||0;if(f.max){const mx=sv(pid,f.max,0);if(mx&&n>mx)n=mx}if(f.cap&&n>f.cap)n=f.cap;
+    if(n!==cur)setSheet(pid,{[k]:n})});
+  v.querySelectorAll('[data-sethero]').forEach(b=>b.onclick=()=>{const pid=b.dataset.sethero;const hp=Math.max(1,parseInt($('set-hp-'+pid).value)||1),fo=Math.max(0,parseInt($('set-f-'+pid).value)||0);setSheet(pid,{hpMax:hp,focusMax:fo,hp,focus:fo})});
+  v.querySelectorAll('[data-editmax]').forEach(b=>b.onclick=()=>setSheet(b.dataset.editmax,{hpMax:0}));
+  v.querySelectorAll('[data-rest]').forEach(b=>b.onclick=()=>{const pid=b.dataset.rest;setSheet(pid,{hp:Math.min(sv(pid,'hpMax',0),sv(pid,'hp',0)+3),focus:Math.min(sv(pid,'focusMax',0),sv(pid,'focus',0)+5)})});
+  v.querySelectorAll('[data-endtrig]').forEach(b=>b.onclick=()=>{const pid=b.dataset.endtrig;setSheet(pid,{endTrig:!sv(pid,'endTrig',false)})});
+  v.querySelectorAll('[data-minion]').forEach(b=>b.onclick=()=>setSheet('_party',{torch:Math.max(0,partyV('torch',0)-6)}));
+}
 function renderRoom(){
   const v=$('room-view');if(!room||!roomCode)return;const g=GAMES[room.game];const seats=seatOrder();const n=seats.length;
   const focus=document.activeElement&&v.contains(document.activeElement)?document.activeElement.dataset.key:null;
@@ -86,7 +173,7 @@ function renderRoom(){
   h+='<div class="plist">';
   if(g.mode==='score'){
     const rows=room.status==='lobby'?seats.map((pid,i)=>({pid,seat:i+1})):ranked();
-    rows.forEach(r=>{const sc=(room.scores||{})[r.pid]||{};const ed=editable(r.pid)&&room.status==='playing';
+    rows.forEach(r=>{const sc=(room.scores||{})[r.pid]||{};const ed=editable(r.pid)&&room.status==='playing'&&room.game!=='century';
       const medal=room.status==='lobby'?'#'+r.seat:(r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':r.rank);
       h+='<div class="pl'+(room.status!=='lobby'&&r.rank===1&&(sc.score||0)>0?' first':'')+'"><div class="rank">'+medal+'</div><div class="avatar sm">'+esc(pEmoji(r.pid))+'</div><div><div class="pname">'+esc(pName(r.pid))+(r.pid===myId?' (you)':'')+'</div><div class="pmeta">Seat '+(seats.indexOf(r.pid)+1)+(g.tb&&room.status!=='lobby'?' · '+g.tb+': '+(sc.tb||0):'')+'</div></div><div class="scorebox">';
       if(ed){h+='<input type="number" min="0" inputmode="numeric" data-key="s-'+r.pid+'" data-pid="'+r.pid+'" data-f="score" value="'+(sc.score||0)+'" aria-label="Score">'+(g.tb?'<input class="tb" type="number" min="0" inputmode="numeric" data-key="t-'+r.pid+'" data-pid="'+r.pid+'" data-f="tb" value="'+(sc.tb||0)+'" title="'+g.tb+'" aria-label="'+g.tb+'">':'')}
@@ -94,13 +181,14 @@ function renderRoom(){
       if(room.status==='lobby'&&isHost()&&r.pid!==myId)h+='<button class="x" data-rm="'+r.pid+'" title="Remove">✕</button>';
       h+='</div></div>'});
     if(room.status==='playing'&&g.tb)h+='<p class="hint" style="margin:2px 4px">Second box = '+g.tb.toLowerCase()+' (tie-breaker).</p>';
-    if(room.status!=='lobby'&&room.game==='century')h+='<p class="hint" style="margin:2px 4px">Ties go to the player later in turn order (seat).</p>';
+    if(room.status!=='lobby'&&room.game==='century')h+='<p class="hint" style="margin:2px 4px">Scores add up automatically from each tracker below. Ties go to the player later in turn order.</p>';
   }else{
     seats.forEach((pid,i)=>{h+='<div class="pl"><div class="rank">#'+(i+1)+'</div><div class="avatar sm">'+esc(pEmoji(pid))+'</div><div><div class="pname">'+esc(pName(pid))+(pid===myId?' (you)':'')+'</div><div class="pmeta">Hero '+(i+1)+'</div></div><div class="scorebox">'+(room.status==='lobby'&&isHost()&&pid!==myId?'<button class="x" data-rm="'+pid+'">✕</button>':'')+'</div></div>'});
     if(room.status!=='lobby'){h+='<div class="outcome"><button class="win" data-out="win" aria-pressed="'+(room.outcome==='win')+'">🏆 Boss defeated!</button><button class="lose" data-out="lose" aria-pressed="'+(room.outcome==='lose')+'">💀 The dungeon won</button></div>'}
   }
   if(!n)h+='<div class="empty">No players yet.</div>';
   h+='</div>';
+  if(room.status!=='lobby'&&n)h+=renderTrackers(seats);
   if(room.status==='lobby'&&canWrite!==false){
     if(isHost()){const others=Object.entries(players).filter(([id])=>!(room.members||{})[id]);
       h+='<div class="addrow">'+(others.length?'<select class="txt" id="add-existing"><option value="">Add a saved player…</option>'+others.map(([id,p])=>'<option value="'+esc(id)+'">'+esc(p.emoji+' '+p.name)+'</option>').join('')+'</select>':'')+'<input class="txt" id="add-name" maxlength="18" placeholder="…or quick-add a name"><button class="btn" id="add-btn">+ Add</button></div><p class="hint" style="margin:6px 2px 0">Add friends who don\'t have the app. They\'ll still get a spot on the leaderboard.</p>'}
@@ -117,6 +205,7 @@ function renderRoom(){
   v.innerHTML=h;drawQR($('qr-room'),APP_URL+'#room-'+roomCode);
   v.querySelectorAll('input[data-pid]').forEach(i=>i.addEventListener('input',()=>setScore(i.dataset.pid,i.dataset.f,i.value)));
   if(focus){const el=v.querySelector('[data-key="'+focus+'"]');if(el){el.focus();try{el.select()}catch(e){}}}
+  bindTrackers(v);
   v.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>removeMember(b.dataset.rm));
   v.querySelectorAll('[data-out]').forEach(b=>b.onclick=()=>{if(canWrite===false||room.status==='done'||!(room.members||{})[myId]&&!isHost())return;queued('rooms/'+roomCode,()=>db.doc('rooms/'+roomCode).update({outcome:b.dataset.out})).catch(onWriteErr)});
   const on=(id,fn)=>{const el=$(id);if(el)el.onclick=fn};
@@ -133,7 +222,7 @@ function renderRoom(){
 async function finishGame(){
   const g=GAMES[room.game];let doc={game:room.game,code:roomCode,finishedAt:Date.now(),host:myId};
   if(g.mode==='coop'){if(!room.outcome){status('Pick the outcome first: did you beat the boss?');return}
-    doc.coop=room.outcome;doc.standings=seatOrder().map((pid,i)=>({pid,name:pName(pid),emoji:pEmoji(pid),seat:i+1,win:room.outcome==='win'}))}
+    doc.coop=room.outcome;doc.standings=seatOrder().map((pid,i)=>({pid,name:pName(pid),emoji:pEmoji(pid),seat:i+1,win:room.outcome==='win',slain:sv(pid,'slain',0)}))}
   else doc.standings=ranked().map(r=>({pid:r.pid,name:pName(r.pid),emoji:pEmoji(r.pid),seat:r.seat,score:r.score,tb:r.tb,rank:r.rank,win:r.rank===1}));
   try{const ref=await db.collection('results').add(doc);await queued('rooms/'+roomCode,()=>db.doc('rooms/'+roomCode).update({status:'done',resultId:ref.id}));status('');if(g.mode!=='coop'||room.outcome==='win')confetti()}catch(e){onWriteErr(e)}
 }

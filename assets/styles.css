@@ -250,3 +250,53 @@ details,section.block{scroll-margin-top:70px}
 @media (max-width:720px){.quicklinks{columns:1}}
 @media (max-width:720px){nav.games{flex-wrap:nowrap;overflow-x:auto;padding:2px 2px 8px;margin:0 -20px;padding-left:20px;scrollbar-width:none}nav.games::-webkit-scrollbar{display:none}nav.games a{white-space:nowrap;padding:9px 14px;font-size:15px;flex:none}.tagline{display:none}}
 @media (max-width:720px){.subnav{flex-wrap:nowrap;overflow-x:auto;margin-left:-20px;margin-right:-20px;padding-left:20px;padding-right:20px;scrollbar-width:none}.subnav::-webkit-scrollbar{display:none}.subnav a{white-space:nowrap;flex:none}}
+
+/* ---------- live player trackers ---------- */
+.tk-wrap{margin-top:18px;padding-top:16px;border-top:2px dashed var(--line)}
+.tk-wrap>.row{margin-bottom:10px}
+.tk-wrap h3{font-size:20px}
+.tk-wrap .notice{margin:8px 0}
+.tk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:10px}
+.tk-card,.tk-party{background:#fff;border:2px solid var(--line);border-radius:20px;padding:14px}
+.tk-party{background:var(--tint);margin-top:6px}
+.tk-card.mine{border-color:var(--accent);box-shadow:0 4px 0 var(--accent-soft)}
+.tk-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.tk-head .pname{font-weight:800}.tk-head .pmeta{font-size:12px;color:var(--muted);font-weight:700}
+.tk-badge{margin-left:auto;font-size:11.5px;font-weight:900;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.tk-badge.ko{background:#e9e4f5;color:#5b4a8a}.tk-badge.low{background:#ffe1e6;color:#b3304c}.tk-badge.end{background:#fff1c7;color:#9a6a00}
+.tk-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0}
+.tk-row.at-cap .tk-v{color:#b3304c}
+.tk-label{font-weight:800;font-size:14px}
+.tk-ctrl{display:flex;align-items:center;gap:6px}
+.tk-v{font-family:Fredoka,sans-serif;font-size:24px;font-weight:700;min-width:30px;text-align:center;color:var(--accent-ink)}
+.tk-max{font-weight:800;color:var(--muted);font-size:13px;margin-left:-4px}
+.tk-b{all:unset;cursor:pointer;width:38px;height:38px;border-radius:50%;border:2px solid var(--line);background:#fff;display:grid;place-items:center;font-size:20px;font-weight:900;box-shadow:0 3px 0 var(--line);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.tk-b:active{transform:translateY(2px) scale(.94);box-shadow:0 1px 0 var(--line)}
+.tk-b.sm{width:30px;height:30px;font-size:16px}
+.tk-bar{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin:0 0 6px}
+.tk-bar i{display:block;height:100%;border-radius:999px;transition:width .3s cubic-bezier(.3,1.4,.6,1)}
+.tk-bar.hp i{background:#ff7a8a}.tk-bar.hp.low i{background:#e0344f}.tk-bar.focus i{background:#6aa8ff}
+.tk-bar.car i{background:var(--accent)}.tk-bar.car.over i{background:#e0344f}
+.tk-quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tk-quick .btn{font-size:13px;padding:7px 12px}
+.tk-setup{background:var(--tint);border-radius:14px;padding:12px}
+.tk-setrow{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+.tk-setrow label{font-size:12px;font-weight:800;display:flex;flex-direction:column;gap:3px}
+.tk-setrow input{width:70px;padding:7px 8px;border-radius:12px;border:2px solid var(--line);font:inherit;font-weight:800}
+.tk-toggle{all:unset;cursor:pointer;display:block;text-align:center;margin-top:8px;padding:10px;border-radius:14px;border:2px dashed var(--line);font-weight:800;font-size:14px}
+.tk-toggle.on{background:#fff1c7;border:2px solid #f2cf73;color:#7a5600}
+.tk-toggle:disabled{cursor:default}
+.tk-crys{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+.tk-cry{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--tint);border-radius:14px;padding:8px 4px}
+.tk-cry .crystal{width:16px;height:16px;margin:4px}
+.tk-cry span{display:flex;gap:4px}
+.tk-caravan{font-size:13px;font-weight:800;margin-bottom:4px}
+.tk-caravan.over{color:#b3304c}
+.tk-total{margin-top:8px;text-align:right;font-weight:800}
+.tk-total b{font-family:Fredoka,sans-serif;font-size:26px;color:var(--accent-ink)}
+.warn.sm{font-size:13px;padding:8px 12px;margin-top:8px}
+.tk-crys{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.tk-cry{min-width:0;padding:8px 2px}
+.tk-cry span{gap:3px}
+.tk-b.sm{width:27px;height:27px;font-size:15px;box-shadow:0 2px 0 var(--line)}
+@media (max-width:400px){.tk-card,.tk-party{padding:12px}.tk-b{width:34px;height:34px}}

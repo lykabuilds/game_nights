@@ -8,6 +8,7 @@ Interactive, searchable rules for **Harmonies**, **Tiny Epic Dungeons** and **Ce
 - 🔎 Site-wide search with synonyms ("mana" finds Focus, "points" finds scoring). Press `/` to search.
 - 🔗 Deep links to any rule or turn step, e.g. `harmonies/#h-trees-green-on-brown` or `harmonies/#h-turn--3`
 - 📱 Game Night: QR sharing, quick players, 4-letter room codes, live scores and a leaderboard. No sign-up.
+- ❤️ Live player trackers per game: Health/Focus and a party Torch/Goblin panel (Tiny Epic Dungeons), crystals, caravan limit and auto-scoring (Century), card limit, cubes and end trigger (Harmonies)
 
 **Stack:** static HTML/CSS/vanilla JS on GitHub Pages (no build step needed to deploy), with Firebase Anonymous Auth and Cloud Firestore for real-time data.
 

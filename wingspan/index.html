@@ -54,7 +54,7 @@
     </div>
   </div>
   <div class="subnav">
-    <a href="#w-setup">Setup</a><a href="#w-turn">Your turn</a><a href="#w-rounds">Rounds</a><a href="#w-rules">Rules detail</a><a href="#w-end">Game end</a><a href="#w-goals">Goal helper</a><a href="#w-calc">Score calculator</a>
+    <a href="#w-setup">Setup</a><a href="#w-turn">Your turn</a><a href="#w-rounds">Rounds</a><a href="#w-rules">Rules detail</a><a href="#w-birds">Bird appendix</a><a href="#w-end">Game end</a><a href="#w-goals">Goal helper</a><a href="#w-calc">Score calculator</a>
   </div>
 
   <section class="block" id="w-setup">
@@ -135,8 +135,39 @@
     </div>
   </section>
 
+
+  <section class="block" id="w-birds">
+    <h2><span class="num">5</span>Bird appendix</h2>
+    <div class="card calc" id="birdapp">
+      <div class="field"><label for="b-q">Find a bird</label><input id="b-q" class="txt" type="search" placeholder="Name or scientific name, e.g. owl, hawk, Corvus" autocomplete="off"></div>
+      <div class="fields">
+        <div class="field"><label for="b-set">Set</label><select id="b-set"><option value="core">Base game</option><option value="european">European Expansion</option><option value="oceania">Oceania Expansion</option><option value="asia">Asia</option><option value="americas">Americas Expansion</option><option value="promo">Promo packs</option><option value="all">All sets</option></select></div>
+        <div class="field"><label for="b-hab">Habitat</label><select id="b-hab"><option value="">Any</option><option value="F">🌲 Forest</option><option value="G">🌾 Grassland</option><option value="W">💧 Wetland</option></select></div>
+        <div class="field"><label for="b-food">Eats</label><select id="b-food"><option value="">Any food</option><option value="inv">🐛 Invertebrate</option><option value="seed">🌰 Seed</option><option value="fish">🐟 Fish</option><option value="fruit">🍒 Fruit</option><option value="rod">🐭 Rodent</option><option value="nec">🌸 Nectar</option><option value="wild">✳️ Wild</option><option value="free">No food cost</option></select></div>
+        <div class="field"><label for="b-col">Power</label><select id="b-col"><option value="">Any power</option><option value="white">⚪ When played</option><option value="brown">🟤 When activated</option><option value="pink">🩷 Once between turns</option><option value="teal">🩵 Round end</option><option value="yellow">🟡 Game end</option><option value="none">No power</option></select></div>
+        <div class="field"><label for="b-nest">Nest</label><select id="b-nest"><option value="">Any nest</option><option value="bowl">🥣 Bowl</option><option value="cavity">🕳️ Cavity</option><option value="ground">🪨 Ground</option><option value="platform">🪵 Platform</option><option value="wild">⭐ Wild (star)</option><option value="none">No nest</option></select></div>
+        <div class="field"><label for="b-bonus">Counts for bonus card</label><select id="b-bonus"><option value="">Any</option><option value="Anatomist">Anatomist</option><option value="Backyard Birder">Backyard Birder</option><option value="Bird Counter">Bird Counter</option><option value="Bird Feeder">Bird Feeder</option><option value="Cartographer">Cartographer</option><option value="Enclosure Builder">Enclosure Builder</option><option value="Falconer">Falconer</option><option value="Fishery Manager">Fishery Manager</option><option value="Food Web Expert">Food Web Expert</option><option value="Forester">Forester</option><option value="Historian">Historian</option><option value="Large Bird Specialist">Large Bird Specialist</option><option value="Nest Box Builder">Nest Box Builder</option><option value="Passerine Specialist">Passerine Specialist</option><option value="Photographer">Photographer</option><option value="Platform Builder">Platform Builder</option><option value="Prairie Manager">Prairie Manager</option><option value="Rodentologist">Rodentologist</option><option value="Viticulturalist">Viticulturalist</option><option value="Wetland Scientist">Wetland Scientist</option><option value="Wildlife Gardener">Wildlife Gardener</option></select></div>
+        <div class="field"><label for="b-sort">Sort by</label><select id="b-sort"><option value="n">Name A–Z</option><option value="p">Most points</option><option value="t">Cheapest food</option><option value="e">Biggest egg limit</option><option value="w">Biggest wingspan</option><option value="w2">Smallest wingspan</option></select></div>
+      </div>
+      <div class="pill-select b-tags" id="b-tags"><button type="button" data-v="pr" aria-pressed="false">🦅 Predators</button><button type="button" data-v="fl" aria-pressed="false">🐦‍⬛ Flocking</button><button type="button" data-v="bo" aria-pressed="false">🎯 Draws bonus cards</button></div>
+      <div class="row" style="margin:10px 0 4px"><span class="hint" id="b-count" aria-live="polite">Loading birds…</span><button type="button" class="btn" id="b-reset">Clear filters</button></div>
+      <div id="b-list" class="b-list"></div>
+      <div style="text-align:center;margin-top:12px"><button type="button" class="btn hidden" id="b-more">Show more</button></div>
+      <p class="hint" style="margin:12px 0 0">Bird facts come from the community Wingspan card spreadsheet by TawnyFrogmouth on BoardGameGeek, via the open-source Wingsearch project. Exact power wording is on each card. For tricky rulings, check the appendix in your box.</p>
+    </div>
+    <div class="acc" style="margin-top:14px">
+      <details id="w-power-colors"><summary>Power colors explained</summary><div class="body"><ul><li><b>White, when played:</b> happens once, right after you play the bird.</li><li><b>Brown, when activated:</b> happens each time you take the action of the row the bird sits in. Brown powers go right to left and are optional.</li><li><b>Pink, once between turns:</b> reacts to something another player does, at most once before your next turn.</li><li><b>Teal, round end</b> (European Expansion): happens at the end of every round.</li><li><b>Yellow, game end</b> (Oceania Expansion): happens once when the game ends, before scoring.</li></ul></div></details>
+      <details id="w-predators-and-hunting"><summary>Predators and hunting</summary><div class="body"><p>Predators try to catch prey. Usually you reveal a card from the deck and check its wingspan, or roll dice not in the birdfeeder. If the hunt works, you tuck the card behind the predator or cache food on it. Each tucked card or cached food is worth 1 point at the end.</p></div></details>
+      <details id="w-flocking-and-tucking"><summary>Flocking and tucking</summary><div class="body"><p>Flocking birds let you tuck cards behind them, often from your hand. A tucked card is no longer a bird you can play, but it's worth 1 point. Some flocking powers also give you something back, like a card or food.</p></div></details>
+      <details id="w-caching-food"><summary>Caching food</summary><div class="body"><p>Cached food sits on a bird card. You can't spend it, but each token is worth 1 point at game end.</p></div></details>
+      <details id="w-nest-types"><summary>Nest types</summary><div class="body"><p>There are four nest types: <b>bowl, cavity, ground and platform</b>. A <b>star</b> nest counts as any nest type, for bonus cards, goals and powers. A few birds have no nest and can't hold eggs.</p></div></details>
+      <details id="w-food-cost-symbols"><summary>Food cost symbols</summary><div class="body"><ul><li>Several food icons in a row: pay all of them.</li><li>Icons split by a <b>/</b>: pay any one of them.</li><li><b>Wild</b>: pay any one food.</li><li>Remember: any 2 food can stand in for 1 food of any type.</li></ul></div></details>
+      <details id="w-wingspan-size"><summary>Wingspan size</summary><div class="body"><p>The number in centimeters on each card. It matters for predator hunts and some bonus cards. A few flightless birds show a star wingspan, which counts as any size.</p></div></details>
+      <details id="w-nectar"><summary>Nectar (Oceania Expansion)</summary><div class="body"><p>Nectar is an extra food type that can be paid as any food. Unspent nectar is discarded at the end of each round. At game end, players compare how much nectar they spent in each habitat for bonus points.</p></div></details>
+    </div>
+  </section>
   <section class="block" id="w-end">
-    <h2><span class="num">5</span>Game end and winning</h2>
+    <h2><span class="num">6</span>Game end and winning</h2>
     <div class="grid2">
       <div class="card"><h3>The game ends…</h3><p style="margin:0">…after round 4, once everyone has used their 5 turns and the last goal is scored.</p></div>
       <div class="card"><h3>Scoring</h3><ul style="margin:0;padding-left:20px"><li>Points printed on your birds</li><li>Bonus cards you completed</li><li>End-of-round goals</li><li>1 point per egg, cached food and tucked card</li></ul><p><b>Tie:</b> the player with the most unused food tokens wins. If still tied, they share the win.</p></div>
@@ -144,7 +175,7 @@
   </section>
 
   <section class="block" id="w-goals">
-    <h2><span class="num">6</span>Green goal helper</h2>
+    <h2><span class="num">7</span>Green goal helper</h2>
     <div class="card calc" id="wgoal">
       <div class="fields">
         <div class="field"><label for="wg-round">Round</label><select id="wg-round"><option value="0">Round 1 (4 · 1 · 0)</option><option value="1">Round 2 (5 · 2 · 1)</option><option value="2">Round 3 (6 · 3 · 2)</option><option value="3">Round 4 (7 · 4 · 3)</option></select></div>
@@ -156,7 +187,7 @@
   </section>
 
   <section class="block" id="w-calc">
-    <h2><span class="num">7</span>Score calculator</h2>
+    <h2><span class="num">8</span>Score calculator</h2>
     <div class="card calc" id="wcalc">
       <div class="fields">
         <div class="field"><label>Bird points (printed)</label><input type="number" min="0" data-k="birds" value="0"></div>

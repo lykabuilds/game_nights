@@ -307,3 +307,29 @@ details,section.block{scroll-margin-top:70px}
 .tk-hab .tk-hic{font-size:20px;line-height:1}
 .tk-hab small{font-size:11px;font-weight:800;color:var(--muted)}
 .tk-cry.full{box-shadow:inset 0 0 0 2px var(--accent)}
+
+/* ---------- Wingspan bird appendix ---------- */
+.b-tags{margin-top:2px}
+.b-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:8px}
+.bird{background:#fff;border:2px solid var(--line);border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:7px;position:relative}
+.bird h3{font-size:16.5px;margin:0;line-height:1.25}
+.b-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.b-sci{font-size:12.5px;color:var(--muted)}
+.b-pts{flex:none;width:46px;height:46px;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;font-family:Fredoka,sans-serif;font-weight:700;font-size:20px;line-height:.9;text-align:center}
+.b-pts small{display:block;font-size:9.5px;font-family:Nunito,sans-serif;font-weight:900;text-transform:uppercase}
+.b-row{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--tint);border-radius:12px;padding:6px 10px}
+.b-hab{display:flex;gap:4px;font-size:18px}
+.b-food{font-size:17px;letter-spacing:1px}
+.b-or{color:var(--muted);font-weight:900;margin:0 1px}
+.b-free{font-size:12px;font-weight:900;color:var(--muted)}
+.b-meta{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:12.5px;font-weight:800;align-items:center}
+.b-pc{padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:900;border:1.5px solid rgba(0,0,0,.08)}
+.pc-white{background:#fff;color:#4b4560;border-color:#d9d3e6}.pc-brown{background:#efe0d2;color:#7a4a25}.pc-pink{background:#ffe0ec;color:#b2366a}
+.pc-teal{background:#d8f3f1;color:#1d7a72}.pc-yellow{background:#fff1c2;color:#8a6400}.pc-none{background:#f1eef5;color:var(--muted)}
+.b-tags2{display:flex;flex-wrap:wrap;gap:5px;font-size:11.5px;font-weight:800}
+.b-tags2 span{background:var(--tint);border-radius:999px;padding:2px 8px}
+.b-tags2 .b-bc{border-radius:10px;background:#fff8e1;color:#7a5a00}
+.b-set{position:absolute;bottom:10px;right:12px;font-size:10.5px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.bird .b-tags2:last-of-type,.bird .b-meta:last-of-type{padding-right:70px}
+.b-set{position:static;text-align:right;margin-top:-2px}
+.bird .b-tags2:last-of-type,.bird .b-meta:last-of-type{padding-right:0}

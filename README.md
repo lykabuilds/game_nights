@@ -6,6 +6,7 @@ Interactive, searchable rules for **Wingspan**, **Harmonies**, **Tiny Epic Dunge
 
 - 📖 A guide page for each game: setup checklists, turn walkthroughs, rules detail and score calculators
 - 🔎 Site-wide search with synonyms ("mana" finds Focus, "points" finds scoring). Press `/` to search.
+- 🐦 Wingspan bird appendix: search all 707 birds (base game + expansions) by name, habitat, food, power color, nest, wingspan, predator/flocking and bonus cards
 - 🔗 Deep links to any rule or turn step, e.g. `harmonies/#h-trees-green-on-brown` or `harmonies/#h-turn--3`
 - 📱 Game Night: QR sharing, quick players, 4-letter room codes, live scores and a leaderboard. No sign-up.
 - ❤️ Live player trackers per game: Health/Focus and a party Torch/Goblin panel (Tiny Epic Dungeons), crystals, caravan limit and auto-scoring (Century), card limit, cubes and end trigger (Harmonies), habitats, eggs, egg-cost hint, round tracker and auto-scoring (Wingspan)
@@ -26,6 +27,7 @@ assets/
   styles.css               All styles (themes per game via body[data-game])
   app.js                   Shared behavior: search, checklists, steppers, deep links, calculators
   search-index.js          Search data: every rule, section and turn step
+  birds.json               Wingspan bird facts (loaded only on the Wingspan page)
   game-night.js            QR codes, players, rooms, leaderboard
   firebase.js              Firebase adapter (anonymous sign-in + Firestore)
   og/*.png                 Link-preview images (1200×630)
@@ -82,3 +84,5 @@ Rules live directly in each guide's `index.html` (inside `<details>` blocks). If
 
 ---
 Unofficial fan guide. Rules are summarized in plain language. Always check each game's official rulebook. Game names are trademarks of their publishers.
+
+Wingspan bird facts come from the community bird card spreadsheet by TawnyFrogmouth on BoardGameGeek, via the open-source [Wingsearch](https://github.com/navarog/wingsearch) project. Only factual card attributes are included, not power or flavor text.

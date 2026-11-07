@@ -344,6 +344,65 @@
     calcW();
   }
 
+
+  /* ---------- Wingspan: bird appendix (lazy-loaded data) ---------- */
+  if ($('birdapp')) {
+    const FOOD = { inv: '🐛', seed: '🌰', fish: '🐟', fruit: '🍒', rod: '🐭', nec: '🌸', wild: '✳️' };
+    const HAB = { F: ['🌲', 'Forest'], G: ['🌾', 'Grassland'], W: ['💧', 'Wetland'] };
+    const NEST = { bowl: ['🥣', 'Bowl'], cavity: ['🕳️', 'Cavity'], ground: ['🪨', 'Ground'], platform: ['🪵', 'Platform'], wild: ['⭐', 'Star (any)'], none: ['—', 'No nest'] };
+    const COL = { white: 'When played', brown: 'When activated', pink: 'Once between turns', teal: 'Round end', yellow: 'Game end', none: 'No power' };
+    const SETS = { core: 'Base game', european: 'European', oceania: 'Oceania', asia: 'Asia', americas: 'Americas', promo: 'Promo' };
+    const PAGE_SIZE = 30;
+    let birds = [], shown = PAGE_SIZE;
+    const tags = new Set();
+    const ids = ['b-q', 'b-set', 'b-hab', 'b-food', 'b-col', 'b-nest', 'b-bonus', 'b-sort'];
+    const numv = (x) => (typeof x === 'number' ? x : -1);
+    function food(b) {
+      const parts = [];
+      Object.entries(b.f).forEach(([k, n]) => { for (let i = 0; i < n; i++) parts.push(FOOD[k]); });
+      if (!parts.length) return '<span class="b-free">Free</span>';
+      return '<span class="b-food" title="Food cost">' + parts.join(b.or ? '<span class="b-or">/</span>' : '') + '</span>';
+    }
+    function card(b) {
+      return '<article class="bird"><div class="b-top"><div><h3>' + esc(b.n) + '</h3><i class="b-sci">' + esc(b.s) + '</i></div><span class="b-pts" title="Points">' + (b.p ?? 0) + '<small>pts</small></span></div>' +
+        '<div class="b-row"><span class="b-hab" title="Habitats">' + b.h.split('').map((h) => '<span title="' + HAB[h][1] + '">' + HAB[h][0] + '</span>').join('') + '</span>' + food(b) + '</div>' +
+        '<div class="b-meta"><span class="b-pc pc-' + b.c + '">' + COL[b.c] + '</span><span title="Nest">' + NEST[b.nest][0] + ' ' + NEST[b.nest][1] + '</span><span title="Egg limit">🥚 ' + (b.e ?? 0) + '</span><span title="Wingspan">↔ ' + (typeof b.w === 'number' ? b.w + ' cm' : '★ any') + '</span></div>' +
+        ((b.pr || b.fl || b.bo || b.bc.length) ? '<div class="b-tags2">' + (b.pr ? '<span>🦅 Predator</span>' : '') + (b.fl ? '<span>🐦‍⬛ Flocking</span>' : '') + (b.bo ? '<span>🎯 Bonus cards</span>' : '') +
+          (b.bc.length ? '<span class="b-bc" title="Counts toward these bonus cards">Counts for: ' + b.bc.map(esc).join(', ') + '</span>' : '') + '</div>' : '') +
+        '<div class="b-set">' + SETS[b.set] + '</div></article>';
+    }
+    function apply(resetShown) {
+      if (resetShown) shown = PAGE_SIZE;
+      const q = $('b-q').value.trim().toLowerCase(), set = $('b-set').value, hab = $('b-hab').value, fd = $('b-food').value;
+      const col = $('b-col').value, nest = $('b-nest').value, bonus = $('b-bonus').value, sort = $('b-sort').value;
+      let list = birds.filter((b) =>
+        (set === 'all' || b.set === set) && (!q || new RegExp('(^|[^a-z])' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(b.n.toLowerCase()) || b.s.toLowerCase().includes(q)) &&
+        (!hab || b.h.includes(hab)) && (!fd || (fd === 'free' ? !Object.keys(b.f).length : b.f[fd])) &&
+        (!col || b.c === col) && (!nest || b.nest === nest) && (!bonus || b.bc.includes(bonus)) &&
+        [...tags].every((t) => b[t]));
+      const by = { n: (a, b) => a.n.localeCompare(b.n), p: (a, b) => (b.p ?? 0) - (a.p ?? 0) || a.n.localeCompare(b.n), t: (a, b) => (a.t ?? 0) - (b.t ?? 0) || a.n.localeCompare(b.n),
+        e: (a, b) => (b.e ?? 0) - (a.e ?? 0) || a.n.localeCompare(b.n), w: (a, b) => numv(b.w) - numv(a.w), w2: (a, b) => (numv(a.w) < 0 ? 1e9 : a.w) - (numv(b.w) < 0 ? 1e9 : b.w) };
+      list.sort(by[sort]);
+      $('b-count').textContent = list.length + ' bird' + (list.length === 1 ? '' : 's') + ' found';
+      $('b-list').innerHTML = list.length ? list.slice(0, shown).map(card).join('') : '<div class="empty">No birds match. Try fewer filters.</div>';
+      $('b-more').classList.toggle('hidden', list.length <= shown);
+      $('b-more').textContent = 'Show more (' + (list.length - shown) + ' left)';
+    }
+    let t;
+    ids.forEach((id) => $(id).addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => apply(true), 120); }));
+    $('b-tags').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+      const on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', on);
+      on ? tags.add(b.dataset.v) : tags.delete(b.dataset.v); apply(true);
+    }));
+    $('b-more').addEventListener('click', () => { shown += PAGE_SIZE; apply(false); });
+    $('b-reset').addEventListener('click', () => {
+      ids.forEach((id) => { const el = $(id); el.value = id === 'b-set' ? 'core' : id === 'b-sort' ? 'n' : ''; });
+      tags.clear(); $('b-tags').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', 'false')); apply(true);
+    });
+    fetch(ROOT + 'assets/birds.json').then((r) => r.json()).then((d) => { birds = d.birds; apply(true); })
+      .catch(() => { $('b-count').textContent = "Couldn't load the bird list. Check your connection and refresh."; });
+  }
+
   /* ---------- Century: score sheet ---------- */
   if ($('cplayers')) {
     const cp = $('cplayers');

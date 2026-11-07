@@ -7,6 +7,7 @@ window.backend=(()=>{let res;const p=new Promise(r=>res=r);
 (function(){
 const APP_URL=location.origin+location.pathname;const ROOT_URL=new URL(document.documentElement.dataset.root||'./',location.href).href;
 const GAMES={harmonies:{name:'Harmonies',icon:'🌿',min:1,max:4,tb:'Animal cubes',mode:'score'},
+  wingspan:{name:'Wingspan',icon:'🐦',min:1,max:5,tb:'Unused food',mode:'score'},
   century:{name:'Century: Golem Edition',icon:'💎',min:2,max:5,tb:null,mode:'score'},
   ted:{name:'Tiny Epic Dungeons',icon:'🗡️',min:2,max:4,tb:null,mode:'coop'}};
 const EMOJIS=['🦊','🐸','🐼','🦄','🐙','🐢','🦎','🐝','🐧','🦉','🐱','🐶','🐰','🐯','🐨','🍄','🌸','⭐','🌈','🍙','🍡','🎸','🚀','👾'];
@@ -71,8 +72,9 @@ function removeMember(pid){const m={...room.members};delete m[pid];const sc={...
 function seatOrder(){return Object.entries(room.members||{}).sort((a,b)=>a[1].joinedAt-b[1].joinedAt).map(e=>e[0])}
 function ranked(){const g=GAMES[room.game];const seats=seatOrder();const sc=room.scores||{};
   const rows=seats.map((pid,i)=>({pid,seat:i+1,score:+(sc[pid]?.score)||0,tb:+(sc[pid]?.tb)||0}));
-  rows.sort((a,b)=>b.score-a.score||(room.game==='harmonies'?b.tb-a.tb:0)||(room.game==='century'?b.seat-a.seat:0));
-  let rank=0,prev=null;rows.forEach((r,i)=>{const key=room.game==='century'?r.score+'|'+r.seat:r.score+'|'+(room.game==='harmonies'?r.tb:'');if(key!==prev){rank=i+1;prev=key}r.rank=rank});return rows}
+  const tbg=room.game==='harmonies'||room.game==='wingspan';
+  rows.sort((a,b)=>b.score-a.score||(tbg?b.tb-a.tb:0)||(room.game==='century'?b.seat-a.seat:0));
+  let rank=0,prev=null;rows.forEach((r,i)=>{const key=room.game==='century'?r.score+'|'+r.seat:r.score+'|'+(tbg?r.tb:'');if(key!==prev){rank=i+1;prev=key}r.rank=rank});return rows}
 const pName=pid=>players[pid]?.name||'Player';const pEmoji=pid=>players[pid]?.emoji||'🙂';
 const isHost=()=>room&&room.host===myId;const editable=pid=>canWrite!==false&&room.status!=='done'&&(isHost()||pid===myId);
 const timers={};
@@ -83,12 +85,16 @@ function setScore(pid,field,val){clearTimeout(timers[pid+field]);timers[pid+fiel
 const TRK={
   ted:{hero:[{k:'hp',icon:'❤️',label:'Health',max:'hpMax',min:0},{k:'focus',icon:'✨',label:'Focus',max:'focusMax',min:0},{k:'slain',icon:'⚔️',label:'Enemies slain',min:0}]},
   harmonies:{hero:[{k:'cards',icon:'🃏',label:'Cards in progress',min:0,cap:4},{k:'cubes',icon:'🟫',label:'Animal cubes placed',min:0},{k:'score',icon:'⭐',label:'Running score',min:0,step:1}]},
+  wingspan:{hero:[{k:'forest',icon:'🌲',label:'Forest',min:0,cap:5,hab:1},{k:'grass',icon:'🌾',label:'Grassland',min:0,cap:5,hab:1},{k:'wet',icon:'💧',label:'Wetland',min:0,cap:5,hab:1},
+    {k:'bpts',icon:'🐦',label:'Bird points',min:0},{k:'eggs',icon:'🥚',label:'Eggs on birds',min:0},{k:'cache',icon:'🍒',label:'Cached food',min:0},{k:'tuck',icon:'🃏',label:'Tucked cards',min:0},
+    {k:'bonus',icon:'🎯',label:'Bonus card points',min:0},{k:'goals',icon:'🏁',label:'Round goal points',min:0},{k:'food',icon:'🌰',label:'Food in supply (tie-break)',min:0},{k:'hand',icon:'✋',label:'Cards in hand',min:0}]},
   century:{hero:[{k:'Y',icon:'<span class="crystal" style="background:#e5c443"></span>',label:'Yellow',min:0,crys:1},{k:'G',icon:'<span class="crystal" style="background:#4f9a4a"></span>',label:'Green',min:0,crys:1},{k:'B',icon:'<span class="crystal" style="background:#3f88c5"></span>',label:'Blue',min:0,crys:1},{k:'P',icon:'<span class="crystal" style="background:#d4508f"></span>',label:'Pink',min:0,crys:1},
     {k:'golems',icon:'🗿',label:'Golems claimed',min:0},{k:'gpts',icon:'🏅',label:'Golem points',min:0,step:1},{k:'gold',icon:'🥇',label:'Gold coins (3 pts)',min:0},{k:'silver',icon:'🥈',label:'Silver coins (1 pt)',min:0}]}
 };
 const pend={},pendT={};
 function sv(pid,k,def){const p=pend[pid];if(p&&k in p)return p[k];const s=((room.sheets||{})[pid]||{})[k];return s===undefined?def:s}
 function partyV(k,def){const p=pend._party;if(p&&k in p)return p[k];const s=(room.party||{})[k];return s===undefined?def:s}
+function wingScore(pid){return ['bpts','eggs','cache','tuck','bonus','goals'].reduce((a,k)=>a+sv(pid,k,0),0)}
 function centuryScore(pid){return sv(pid,'gpts',0)+sv(pid,'gold',0)*3+sv(pid,'silver',0)+sv(pid,'G',0)+sv(pid,'B',0)+sv(pid,'P',0)}
 function setSheet(pid,patch){
   pend[pid]=Object.assign(pend[pid]||{},patch);renderRoom();
@@ -97,6 +103,7 @@ function setSheet(pid,patch){
     if(pid==='_party')body={party:snap};
     else{body={sheets:{[pid]:snap}};
       if(room.game==='century'){body.scores={[pid]:{score:centuryScore(pid)}}}
+      if(room.game==='wingspan'){body.scores={[pid]:{score:wingScore(pid),tb:sv(pid,'food',0)}}}
       if(room.game==='harmonies'){const sc={};if('cubes' in snap)sc.tb=snap.cubes;if('score' in snap)sc.score=snap.score;if(Object.keys(sc).length)body.scores={[pid]:sc}}}
     queued('rooms/'+roomCode,()=>db.doc('rooms/'+roomCode).update(body)).then(()=>{
       const cur=pend[pid];if(cur){for(const k in snap)if(cur[k]===snap[k])delete cur[k];if(!Object.keys(cur).length)delete pend[pid]}},onWriteErr)},350)}
@@ -125,6 +132,14 @@ function heroCard(pid,seatNo){
     const end=!!sv(pid,'endTrig',false);
     b+='<button type="button" class="tk-toggle'+(end?' on':'')+'" '+(ed?'data-endtrig="'+pid+'"':'disabled')+' aria-pressed="'+end+'">🏁 2 or fewer empty spaces left</button>';
     if(end)badge='<span class="tk-badge end">🏁 End triggered</span>';
+  }else if(g==='wingspan'){
+    const hab=TRK.wingspan.hero.filter(f=>f.hab);const nb=hab.reduce((a,f)=>a+sv(pid,f.k,0),0);
+    b+='<div class="tk-crys tk-hab">'+hab.map(f=>{const v=sv(pid,f.k,0);
+      return '<div class="tk-cry'+(v>=5?' full':'')+'"><span class="tk-hic">'+f.icon+'</span><output class="tk-v">'+v+'</output><small>'+f.label+'</small>'+(ed?'<span><button type="button" class="tk-b sm" data-pid="'+pid+'" data-k="'+f.k+'" data-d="-1" aria-label="Fewer '+f.label+' birds">−</button><button type="button" class="tk-b sm" data-pid="'+pid+'" data-k="'+f.k+'" data-d="1" aria-label="More '+f.label+' birds">+</button></span>':'')+'</div>'}).join('')+'</div>';
+    const next=hab.map(f=>sv(pid,f.k,0)).filter(v=>v<5);
+    b+='<p class="hint" style="margin:0 0 6px">'+nb+' birds played'+(next.length?' · next bird costs '+(function(){const E=[0,1,1,2,2],lo=E[Math.min(...next)],hi=E[Math.max(...next)];return (lo===hi?lo:lo+'–'+hi)+' egg'+(hi===1&&lo===1?'':'s')})():' · all habitats full')+'</p>';
+    TRK.wingspan.hero.filter(f=>!f.hab).forEach(f=>b+=counter(pid,f,sv(pid,f.k,0),ed));
+    b+='<div class="tk-total">Score so far <b>'+wingScore(pid)+'</b></div>';
   }else if(g==='century'){
     const cry=['Y','G','B','P'].reduce((a,k)=>a+sv(pid,k,0),0);
     b+='<div class="tk-crys">'+TRK.century.hero.filter(f=>f.crys).map(f=>{const v=sv(pid,f.k,0);
@@ -139,7 +154,7 @@ function heroCard(pid,seatNo){
   return '<div class="tk-card'+(mine?' mine':'')+'"><div class="tk-head"><div class="avatar sm">'+esc(pEmoji(pid))+'</div><div><div class="pname">'+esc(pName(pid))+(mine?' (you)':'')+'</div><div class="pmeta">'+(g==='ted'?'Hero ':'Seat ')+seatNo+'</div></div>'+badge+'</div>'+b+
     warn.map(w=>'<div class="warn sm">'+w+'</div>').join('')+'</div>'}
 function renderTrackers(seats){
-  const g=room.game;let h='<div class="tk-wrap"><div class="row"><h3 style="margin:0">'+(g==='ted'?'🛡️ Party tracker':'📊 Player trackers')+'</h3><span class="hint">Updates live on every phone</span></div>';
+  const g=room.game;let h='<div class="tk-wrap"><div class="row"><h3 style="margin:0">'+(g==='ted'?'🛡️ Party tracker':g==='wingspan'?'🪺 Preserve trackers':'📊 Player trackers')+'</h3><span class="hint">Updates live on every phone</span></div>';
   if(g==='ted'){const ed=canWrite!==false&&room.status==='playing'&&((room.members||{})[myId]||isHost());const gob=partyV('goblins',0);
     h+='<div class="tk-party">'+counter('_party',{k:'torch',icon:'🔥',label:'Torch moves',min:0},partyV('torch',0),ed)+
       counter('_party',{k:'goblins',icon:'👺',label:'Goblins on the Torch mat',min:0,cap:5},gob,ed)+
@@ -148,15 +163,18 @@ function renderTrackers(seats){
       (ed?'<div class="tk-quick"><button type="button" class="btn" data-minion="1">👹 Minion killed (torch back 6)</button></div>':'')+'</div>';
     const down=seats.filter(pid=>sv(pid,'hpMax',0)&&sv(pid,'hp',1)<=0).length;
     if(down)h+='<div class="warn sm">'+down+' hero'+(down>1?'es are':' is')+' unconscious.</div>';}
+  if(g==='wingspan'){const ed=canWrite!==false&&room.status==='playing'&&((room.members||{})[myId]||isHost());const rd=partyV('round',1);
+    h+='<div class="tk-party">'+counter('_party',{k:'round',icon:'🗓️',label:'Round',min:1},rd+' / 4',ed)+
+      '<p style="margin:4px 0 0;font-weight:800">'+[8,7,6,5][rd-1]+' turns each this round</p><p class="hint" style="margin:2px 0 0">At round end: score the goal, take back your cubes, refresh the bird tray, pass the first-player token.</p></div>';}
   if(g==='harmonies'&&seats.some(pid=>sv(pid,'endTrig',false)))h+='<div class="notice">🏁 The end is triggered. Finish this round so everyone has the same number of turns.</div>';
   if(g==='century'){const trig=seats.length>=4?5:6;if(seats.some(pid=>sv(pid,'golems',0)>=trig))h+='<div class="notice">🏁 Someone has '+trig+' golems. Finish this round, then score.</div>';}
   const order=[...seats].sort((a,b)=>(b===myId)-(a===myId));
   h+='<div class="tk-grid">'+order.map(pid=>heroCard(pid,seats.indexOf(pid)+1)).join('')+'</div></div>';
   return h}
 function bindTrackers(v){
-  const fieldOf=(pid,k)=>{if(pid==='_party')return {k,min:0,cap:k==='goblins'?5:null};return (TRK[room.game].hero.find(f=>f.k===k))||{k,min:0}};
+  const fieldOf=(pid,k)=>{if(pid==='_party')return k==='round'?{k,min:1,cap:4}:{k,min:0,cap:k==='goblins'?5:null};return (TRK[room.game].hero.find(f=>f.k===k))||{k,min:0}};
   v.querySelectorAll('.tk-b').forEach(b=>b.onclick=()=>{const pid=b.dataset.pid,k=b.dataset.k,f=fieldOf(pid,k);
-    let cur=pid==='_party'?partyV(k,0):sv(pid,k,f.max?sv(pid,f.max,0):0);let n=cur+(+b.dataset.d);
+    let cur=pid==='_party'?partyV(k,k==='round'?1:0):sv(pid,k,f.max?sv(pid,f.max,0):0);let n=cur+(+b.dataset.d);
     if(n<(f.min||0))n=f.min||0;if(f.max){const mx=sv(pid,f.max,0);if(mx&&n>mx)n=mx}if(f.cap&&n>f.cap)n=f.cap;
     if(n!==cur)setSheet(pid,{[k]:n})});
   v.querySelectorAll('[data-sethero]').forEach(b=>b.onclick=()=>{const pid=b.dataset.sethero;const hp=Math.max(1,parseInt($('set-hp-'+pid).value)||1),fo=Math.max(0,parseInt($('set-f-'+pid).value)||0);setSheet(pid,{hpMax:hp,focusMax:fo,hp,focus:fo})});
@@ -173,7 +191,7 @@ function renderRoom(){
   h+='<div class="plist">';
   if(g.mode==='score'){
     const rows=room.status==='lobby'?seats.map((pid,i)=>({pid,seat:i+1})):ranked();
-    rows.forEach(r=>{const sc=(room.scores||{})[r.pid]||{};const ed=editable(r.pid)&&room.status==='playing'&&room.game!=='century';
+    rows.forEach(r=>{const sc=(room.scores||{})[r.pid]||{};const ed=editable(r.pid)&&room.status==='playing'&&room.game!=='century'&&room.game!=='wingspan';
       const medal=room.status==='lobby'?'#'+r.seat:(r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':r.rank);
       h+='<div class="pl'+(room.status!=='lobby'&&r.rank===1&&(sc.score||0)>0?' first':'')+'"><div class="rank">'+medal+'</div><div class="avatar sm">'+esc(pEmoji(r.pid))+'</div><div><div class="pname">'+esc(pName(r.pid))+(r.pid===myId?' (you)':'')+'</div><div class="pmeta">Seat '+(seats.indexOf(r.pid)+1)+(g.tb&&room.status!=='lobby'?' · '+g.tb+': '+(sc.tb||0):'')+'</div></div><div class="scorebox">';
       if(ed){h+='<input type="number" min="0" inputmode="numeric" data-key="s-'+r.pid+'" data-pid="'+r.pid+'" data-f="score" value="'+(sc.score||0)+'" aria-label="Score">'+(g.tb?'<input class="tb" type="number" min="0" inputmode="numeric" data-key="t-'+r.pid+'" data-pid="'+r.pid+'" data-f="tb" value="'+(sc.tb||0)+'" title="'+g.tb+'" aria-label="'+g.tb+'">':'')}
@@ -182,6 +200,7 @@ function renderRoom(){
       h+='</div></div>'});
     if(room.status==='playing'&&g.tb)h+='<p class="hint" style="margin:2px 4px">Second box = '+g.tb.toLowerCase()+' (tie-breaker).</p>';
     if(room.status!=='lobby'&&room.game==='century')h+='<p class="hint" style="margin:2px 4px">Scores add up automatically from each tracker below. Ties go to the player later in turn order.</p>';
+    if(room.status!=='lobby'&&room.game==='wingspan')h+='<p class="hint" style="margin:2px 4px">Scores add up automatically from each tracker below. Ties go to whoever has more unused food.</p>';
   }else{
     seats.forEach((pid,i)=>{h+='<div class="pl"><div class="rank">#'+(i+1)+'</div><div class="avatar sm">'+esc(pEmoji(pid))+'</div><div><div class="pname">'+esc(pName(pid))+(pid===myId?' (you)':'')+'</div><div class="pmeta">Hero '+(i+1)+'</div></div><div class="scorebox">'+(room.status==='lobby'&&isHost()&&pid!==myId?'<button class="x" data-rm="'+pid+'">✕</button>':'')+'</div></div>'});
     if(room.status!=='lobby'){h+='<div class="outcome"><button class="win" data-out="win" aria-pressed="'+(room.outcome==='win')+'">🏆 Boss defeated!</button><button class="lose" data-out="lose" aria-pressed="'+(room.outcome==='lose')+'">💀 The dungeon won</button></div>'}

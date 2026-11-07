@@ -93,11 +93,11 @@
       tree: ['trees', 'green', 'brown'], mountain: ['mountains', 'gray', 'grey'], grey: ['gray'], water: ['river', 'blue', 'islands'],
       gem: ['crystal', 'crystals'], gems: ['crystals'], crystal: ['crystals'], golem: ['golems', 'point'], coin: ['coins', 'gold', 'silver'],
       card: ['cards'], limit: ['max', 'maximum'], max: ['limit', 'maximum'], dead: ['unconscious'], ko: ['unconscious'],
-      turn: ['turns', 'action', 'actions'], stack: ['stacking', 'stacks', 'stacked'], animal: ['animals', 'habitat', 'cubes'], dice: ['die']
+      turn: ['turns', 'action', 'actions'], egg: ['eggs'], eggs: ['egg'], bird: ['birds'], food: ['feeder', 'birdfeeder'], feeder: ['birdfeeder'], goal: ['goals'], round: ['rounds'], stack: ['stacking', 'stacks', 'stacked'], animal: ['animals', 'habitat', 'cubes'], dice: ['die']
     };
     const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
     const IDX = (window.SEARCH_INDEX || []).map((d) => ({ ...d, _t: norm(d.t), _x: norm(d.s + ' ' + d.x) }));
-    const GAME = { harmonies: '🌿 Harmonies', ted: '🗡️ Tiny Epic Dungeons', century: '💎 Century', night: '🎉 Game Night' };
+    const GAME = { wingspan: '🐦 Wingspan', harmonies: '🌿 Harmonies', ted: '🗡️ Tiny Epic Dungeons', century: '💎 Century', night: '🎉 Game Night' };
     let results = [], sel = -1;
 
     function variants(tok) {
@@ -306,6 +306,42 @@
     $('trn-dec').onclick = () => { trn = Math.max(0, trn - 1); rg(); };
     $('trk-reset').onclick = () => { gob = 0; trn = 0; rg(); };
     rg();
+  }
+
+
+  /* ---------- Wingspan: green goal helper ---------- */
+  if ($('wgoal')) {
+    const PTS = [[4, 1, 0], [5, 2, 1], [6, 3, 2], [7, 4, 3]];
+    function wg() {
+      const r = +$('wg-round').value, place = +$('wg-place').value;
+      const tied = Math.max(1, Math.min(5, parseInt($('wg-tied').value, 10) || 1));
+      let pts = 0, note;
+      if (place > 2) { note = 'Only 1st to 3rd place score. You also need at least 1 of the item.'; }
+      else {
+        const shared = PTS[r].slice(place, place + tied);
+        const sum = shared.reduce((a, b) => a + b, 0);
+        pts = Math.floor(sum / tied);
+        note = tied > 1 ? 'Tied places (' + shared.join(' + ') + ' = ' + sum + ') split ' + tied + ' ways, rounded down.' : 'Needs at least 1 of the target item to score.';
+      }
+      bump('wg-out', pts); $('wg-note').textContent = note;
+    }
+    ['wg-round', 'wg-place', 'wg-tied'].forEach((id) => $(id).addEventListener('input', wg));
+    wg();
+  }
+
+  /* ---------- Wingspan: score calculator ---------- */
+  if ($('wcalc')) {
+    const wc = $('wcalc');
+    function calcW() {
+      const v = {};
+      wc.querySelectorAll('input[data-k]').forEach((i) => (v[i.dataset.k] = Math.max(0, parseInt(i.value, 10) || 0)));
+      const goals = v.g1 + v.g2 + v.g3 + v.g4;
+      bump('wtotal', v.birds + v.bonus + goals + v.eggs + v.cache + v.tuck);
+      $('wbreak').textContent = 'Birds ' + v.birds + ' · Bonus ' + v.bonus + ' · Goals ' + goals + ' · Eggs ' + v.eggs + ' · Cached ' + v.cache + ' · Tucked ' + v.tuck + ' · Tie-break food ' + v.food;
+    }
+    wc.addEventListener('input', calcW);
+    wc.querySelector('.reset-calc').addEventListener('click', () => { wc.querySelectorAll('input[data-k]').forEach((i) => (i.value = 0)); calcW(); });
+    calcW();
   }
 
   /* ---------- Century: score sheet ---------- */

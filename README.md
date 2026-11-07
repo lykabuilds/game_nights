@@ -1,6 +1,6 @@
 # 🎲 Game Night Rulebook
 
-Interactive, searchable rules for **Harmonies**, **Tiny Epic Dungeons** and **Century: Golem Edition**, plus a live game-night companion.
+Interactive, searchable rules for **Wingspan**, **Harmonies**, **Tiny Epic Dungeons** and **Century: Golem Edition**, plus a live game-night companion.
 
 **Live site:** https://lykabuilds.github.io/game_nights/
 
@@ -8,7 +8,7 @@ Interactive, searchable rules for **Harmonies**, **Tiny Epic Dungeons** and **Ce
 - 🔎 Site-wide search with synonyms ("mana" finds Focus, "points" finds scoring). Press `/` to search.
 - 🔗 Deep links to any rule or turn step, e.g. `harmonies/#h-trees-green-on-brown` or `harmonies/#h-turn--3`
 - 📱 Game Night: QR sharing, quick players, 4-letter room codes, live scores and a leaderboard. No sign-up.
-- ❤️ Live player trackers per game: Health/Focus and a party Torch/Goblin panel (Tiny Epic Dungeons), crystals, caravan limit and auto-scoring (Century), card limit, cubes and end trigger (Harmonies)
+- ❤️ Live player trackers per game: Health/Focus and a party Torch/Goblin panel (Tiny Epic Dungeons), crystals, caravan limit and auto-scoring (Century), card limit, cubes and end trigger (Harmonies), habitats, eggs, egg-cost hint, round tracker and auto-scoring (Wingspan)
 
 **Stack:** static HTML/CSS/vanilla JS on GitHub Pages (no build step needed to deploy), with Firebase Anonymous Auth and Cloud Firestore for real-time data.
 
@@ -18,6 +18,7 @@ Interactive, searchable rules for **Harmonies**, **Tiny Epic Dungeons** and **Ce
 ```
 index.html                 Home page (links to every guide)
 harmonies/index.html       Harmonies guide
+wingspan/index.html        Wingspan guide
 tiny-epic-dungeons/        Tiny Epic Dungeons guide
 century-golem/             Century: Golem Edition guide
 game-night/                Rooms, players, live scores, leaderboard
@@ -40,7 +41,7 @@ sitemap.xml, robots.txt    For search engines
 1. <https://console.firebase.google.com> → **Create a project** (Analytics optional).
 2. **Authentication → Get started → Sign-in method → Anonymous → Enable.**
 3. **Firestore Database → Create database** → location `asia-southeast1 (Singapore)` → **production mode**.
-4. Firestore **Rules** tab → paste [`firestore.rules`](firestore.rules) → **Publish**.
+4. Firestore **Rules** tab → paste [`firestore.rules`](firestore.rules) → **Publish**. Re-publish whenever you add a game, because the rules list the allowed games.
 5. **Project settings ⚙️ → Your apps → Web `</>`** → register an app → copy the config into [`firebase-config.js`](firebase-config.js). These values are not secret.
 
 ### 2. GitHub Pages

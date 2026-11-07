@@ -5,6 +5,7 @@
 }
 body[data-game="ted"]{--accent:#ff8a5c;--accent-soft:#ffeadf;--accent-ink:#c2512a;--tint:#fff1e9}
 body[data-game="party"]{--accent:#f0699a;--accent-soft:#ffe4ee;--accent-ink:#c03a6c;--tint:#fff0f5}
+body[data-game="wingspan"]{--accent:#2e9fc4;--accent-soft:#dff3fa;--accent-ink:#1d6f8c;--tint:#eef9fd}
 body[data-game="century"]{--accent:#9b7bea;--accent-soft:#efe8ff;--accent-ink:#6a4cc2;--tint:#f4efff}
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -300,3 +301,9 @@ details,section.block{scroll-margin-top:70px}
 .tk-cry span{gap:3px}
 .tk-b.sm{width:27px;height:27px;font-size:15px;box-shadow:0 2px 0 var(--line)}
 @media (max-width:400px){.tk-card,.tk-party{padding:12px}.tk-b{width:34px;height:34px}}
+
+.gamecard[data-theme="wingspan"]{background:linear-gradient(160deg,#dff3fa,#fff 60%)}
+.tk-hab{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tk-hab .tk-hic{font-size:20px;line-height:1}
+.tk-hab small{font-size:11px;font-weight:800;color:var(--muted)}
+.tk-cry.full{box-shadow:inset 0 0 0 2px var(--accent)}
